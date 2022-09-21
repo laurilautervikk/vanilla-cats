@@ -1,0 +1,284 @@
+/* div,
+h1,
+ul,
+li {
+  border: 1px solid red;
+} */
+
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  --white: #f9f9f9;
+  --black: #36383f;
+  --grey: #85888c;
+  --red: #ff0000;
+}
+
+body {
+  margin: 0;
+  /* display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh; */
+}
+
+#app {
+  /* max-width: 960px; */
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+}
+/* fonts */
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+a {
+  text-decoration: none;
+  color: var(--white);
+}
+
+/* a:focus {
+  color: var(--black)
+} */
+
+.fa {
+  font-size: 4em;
+}
+
+.not-favorite i {
+  color: var(--grey);
+}
+
+.is-favorite i {
+  color: var(--red);
+}
+
+.hide {
+  display: none;
+}
+
+
+/* fonts */
+
+.container {
+  width: 100%;
+  text-align: center;
+}
+
+#gallery {
+  margin-top: 80px;
+  max-width: 960px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.card--container {
+  position: relative;
+  width: 300px;
+  height: 300px;
+}
+
+.card--image {
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9px;
+}
+
+.card--favorite-btn {
+  position: absolute;
+  z-index: 1;
+  float: right;
+  top: 10%;
+  left: 88%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.card--favorite-btn:hover {
+  opacity: 0.7;
+}
+
+/* NAV */
+.logo {
+  float: left;
+}
+
+nav {
+  position: fixed;
+  height: fit-content;
+  margin-top: -2px;
+  z-index: 2;
+  width: 100%;
+  background-color: var(--grey);
+}
+
+.nav--list {
+  margin: 0;
+  padding-left: 0;
+  min-width: 100%;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  color: var(--white);
+  overflow: hidden;
+}
+
+.nav--list:hover {
+  opacity: 0.7;
+}
+
+nav li {
+  line-height: 50px;
+  text-align: center;
+  color: var(--white);
+  text-decoration: none;
+  font-size: 24px;
+  list-style: none;
+  cursor: pointer;
+  padding: 0 40px;
+  margin: 0px;
+}
+
+.active {
+  background-color: var(--black);
+}
+
+nav li:hover {
+  background-color: var(--black);
+}
+
+@media screen and (max-width: 800px) {
+  nav {
+    margin-top: auto;
+    margin-bottom: 0;
+    min-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .nav--list {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  #gallery {
+    margin-top: 280px;
+  }
+}
+
+/* NAV END */
+
+/* MODAL START */
+/* The Modal (background) */
+
+#modal-wrapper {
+  z-index: 20;
+}
+
+.login--modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 3; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal--content {
+  background-color: var(--grey);
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 60%; /* Could be more or less, depending on screen size */
+  border-radius: 9px;
+  font-size: 1.6em;
+}
+
+.modal--content input {
+  max-width: 80%;
+  font-size: 0.8em;
+  margin: 6px;
+  padding: 9px;
+  border-radius: 9px;
+  border: 0px;
+}
+
+.modal--content button {
+  font-size: 0.8em;
+  margin: 6px;
+  padding: 9px;
+  border-radius: 9px;
+  border: 1px solid var(--white);
+}
+.modal--content button:hover {
+  border: 1px solid var(--black);
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#toggle-login,
+#toggle-register {
+  color: aqua;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#register:hover {
+  color: var(--white);
+}
+/*fonts inputs*/
+
+
+/* MODAL END */
