@@ -1,6 +1,6 @@
 # vanilla-cats
 
-###Learning to consume the Cats API
+##Learning to consume the Cats API
 
 ###Requirements
 
