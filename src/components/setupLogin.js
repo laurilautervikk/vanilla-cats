@@ -1,59 +1,130 @@
 import { v4 as uuidv4 } from "uuid";
-//import sha256 from 'crypto-js/sha256';
+import bcrypt from "bcryptjs";
+import { setupGallery } from "./setupGallery.js";
 
 export function setupLogin(element) {
   //register and login
-  function registerUser(username, password) {
-    if (username && password) {
-      console.log("inputs ok");
+  function registerUser(inputUsername, inputPassword) {
+    if (inputUsername && inputPassword) {
       //check if LS has user object
-
       if (localStorage.hasOwnProperty("users")) {
         let users = JSON.parse(localStorage.getItem("users"));
-        console.log("users.username from LS ", users.username); //must iterate over usernames
-        console.log("current username ", username);
-        if (users.username === username) {
-          console.log("error: user exists already, or inputs empty");
+        //iterate over usernames in LS
+        let userExists = false;
+        Object.keys(users).forEach(function (key) {
+          if (inputUsername === users[key].username) {
+            return (userExists = true);
+          }
+        });
+
+        if (userExists === true) {
+          const alertBox = document.getElementById("alert-box");
+          alertBox.innerHTML = `<span style="color:red;">Failed, user exists already.</span>`;
+          setTimeout(() => {
+            alertBox.innerHTML = "";
+          }, 1000);
         } else {
-          console.log("username is new");
-          //const passwordHashed  = CryptoJS.AES.encrypt('my message', 'secret key 123').toString();
+          //encrypt password
+          const passwordHashed = bcrypt.hashSync(inputPassword, 10);
           let newUser = {
             id: uuidv4(),
-            username: username,
-            password: password,
+            username: inputUsername,
+            password: passwordHashed,
           };
           users.push(newUser);
-          window.localStorage.setItem("users", JSON.stringify(newUser));
-          console.log("user object ", users);
+          window.localStorage.setItem("users", JSON.stringify(users));
           sessionStorage.setItem("userId", newUser.id);
-          //close modal
+          //get modal
           const modal = document.getElementById("modal");
-          modal.style.display = "none";
+          //alert message
+          const alertBox = document.getElementById("alert-box");
+          alertBox.innerHTML = `<span style="color:white;">User created successfully</span>`;
+          setTimeout(() => {
+            modal.style.display = "none";
+            alertBox.innerHTML = "";
+          }, 1000);
           //toggle main menu
           const loginLink = document.getElementById("login-btn");
           const logoutLink = document.getElementById("logout-btn");
           loginLink.classList.toggle("hide");
           logoutLink.classList.toggle("hide");
+          setupGallery(document.querySelector("#page-content"));
         }
       } else {
-        console.log("no user obj in LS, will create one");
-        let newUsers = [{
-          id: uuidv4(),
-          username: username,
-          password: password,
-        }];
+        let newUsers = [];
         window.localStorage.setItem("users", JSON.stringify(newUsers));
+        registerUser(inputUsername, inputPassword);
       }
+    } else {
+      const alertBox = document.getElementById("alert-box");
+      alertBox.innerHTML = `<span style="color:red;">Insert something</span>`;
+      setTimeout(() => {
+        alertBox.innerHTML = "";
+      }, 1000);
     }
   }
 
-  function loginUser(username, password) {
-    //check if username has value
-    //check if username in local storage
-    //check if password matches
-    //save username to sessionstorage
-    //close modal
-    //fix UI
+  function loginUser(inputUsername, inputPassword) {
+    if (inputUsername && inputPassword) {
+      let users = JSON.parse(localStorage.getItem("users"));
+      //iterate over usernames in LS
+      let dataFromLS = {};
+      Object.keys(users).forEach(function (key) {
+        if (inputUsername === users[key].username) {
+          dataFromLS = {
+            id: users[key].id,
+            username: users[key].username,
+            password: users[key].password,
+          };
+          return dataFromLS;
+        }
+      });
+
+      if (dataFromLS.username) {
+        //check password
+        const isPasswordValid = bcrypt.compareSync(
+          inputPassword,
+          dataFromLS.password
+        );
+
+        if (isPasswordValid) {
+          sessionStorage.setItem("userId", dataFromLS.id);
+          //get modal
+          const modal = document.getElementById("modal");
+          //alert message
+          const alertBox = document.getElementById("alert-box");
+          alertBox.innerHTML = `<span style="color:white;">Login successful</span>`;
+          setTimeout(() => {
+            modal.style.display = "none";
+            alertBox.innerHTML = "";
+          }, 1000);
+          //toggle main menu
+          const loginLink = document.getElementById("login-btn");
+          const logoutLink = document.getElementById("logout-btn");
+          loginLink.classList.toggle("hide");
+          logoutLink.classList.toggle("hide");
+          setupGallery(document.querySelector("#page-content"));
+        } else {
+          const alertBox = document.getElementById("alert-box");
+          alertBox.innerHTML = `<span style="color:red;">Wrong password</span>`;
+          setTimeout(() => {
+            alertBox.innerHTML = "";
+          }, 1000);
+        }
+      } else {
+        const alertBox = document.getElementById("alert-box");
+        alertBox.innerHTML = `<span style="color:red;">No user with that name</span>`;
+        setTimeout(() => {
+          alertBox.innerHTML = "";
+        }, 1000);
+      }
+    } else {
+      const alertBox = document.getElementById("alert-box");
+      alertBox.innerHTML = `<span style="color:red;">Insert something</span>`;
+      setTimeout(() => {
+        alertBox.innerHTML = "";
+      }, 1000);
+    }
   }
 
   function logoutUser() {
@@ -64,8 +135,7 @@ export function setupLogin(element) {
     const logoutLink = document.getElementById("logout-btn");
     loginLink.classList.toggle("hide");
     logoutLink.classList.toggle("hide");
-
-    console.log("user logged out");
+    setupGallery(document.querySelector("#page-content"));
   }
 
   function drawModal() {
@@ -78,8 +148,8 @@ export function setupLogin(element) {
               <span class="close">&times;</span>
               <p id="login-message" class="hide">Or <span id="toggle-login">log in</span> instead</p>
               <p id="register-message" >Sign in or <span id="toggle-register">register</span> a new account</p>
-              <input required type="text" id="username" name="username" placeholder="Username" value=""><br>
-              <input required type="password" id="password" name="password" placeholder="Password" value=""><br><br>
+              <input type="text" id="username" name="username" placeholder="Username" value="" required><br>
+              <input type="password" id="password" name="password" placeholder="Password" value="" required><br><br>
               <button id="user-login-btn" type="button">Login</button>
               <button id="user-register-btn" class="hide" type="button">Register</button>
               <p id="alert-box"></p>
@@ -136,21 +206,18 @@ export function setupLogin(element) {
   //event listener for login btn
   const loginBtn = document.getElementById("user-login-btn");
   loginBtn.addEventListener("click", function (event) {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    loginUser(username, password);
-    console.log("login clicked");
+    const inputUsername = document.getElementById("username").value;
+    const inputPassword = document.getElementById("password").value;
+    loginUser(inputUsername, inputPassword);
     event.preventDefault();
   });
 
   //event listener for login btn
   const registerBtn = document.getElementById("user-register-btn");
   registerBtn.addEventListener("click", function (event) {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    console.log("username at click", username);
-    registerUser(username, password);
-    console.log("register clicked");
+    const inputUsername = document.getElementById("username").value;
+    const inputPassword = document.getElementById("password").value;
+    registerUser(inputUsername, inputPassword);
     event.preventDefault();
   });
 
@@ -158,7 +225,6 @@ export function setupLogin(element) {
   const logoutBtn = document.getElementById("logout-btn");
   logoutBtn.addEventListener("click", function (event) {
     logoutUser();
-    console.log("logout clicked");
     event.preventDefault();
   });
 }

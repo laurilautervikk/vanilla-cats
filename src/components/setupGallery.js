@@ -1,17 +1,24 @@
 import axios from "axios";
-//import uuid from "uuid/v4";
 
 export function setupGallery(element) {
-  const sub_id = "ooo";
-
+  const page = document.getElementById("page-content");
+  page.innerHTML = "";
+  console.log("SET UP GALLERY DONE");
   async function toggleFavorite(cardDiv, image_id) {
+    let sub_id = sessionStorage.getItem("userId");
+    if (sub_id === null) {
+      sub_id = "stranger";
+    }
+    console.log("sub id ", sub_id);
     const payload = {
       image_id: image_id,
       sub_id: sub_id,
     };
+
     //set favorite
     if (cardDiv.classList.contains("not-favorite")) {
       try {
+        console.log("sub id at axios", sub_id);
         const response = await axios.post("/favourites", payload);
         console.log("post response ", response.data);
         if (response.data.message === "SUCCESS") {
@@ -19,9 +26,8 @@ export function setupGallery(element) {
           cardDiv.setAttribute("data-favorite", response.data.id);
           cardDiv.classList.remove("not-favorite");
           cardDiv.classList.add("is-favorite");
-
-          //add id and favorite id to localstorage
-          window.localStorage.setItem(image_id, response.data.id);
+          //add id and favorite id to sessionStorage
+          window.sessionStorage.setItem(image_id, response.data.id);
         } else {
           console.error("error ", error);
         }
@@ -40,7 +46,7 @@ export function setupGallery(element) {
           cardDiv.classList.remove("is-favorite");
           cardDiv.classList.add("not-favorite");
           //remove id and favorite id from local storage
-          window.localStorage.removeItem(image_id);
+          window.sessionStorage.removeItem(image_id);
         } else {
           console.error("error ", error);
         }
@@ -57,9 +63,9 @@ export function setupGallery(element) {
         const cardDiv = document.createElement("div");
         cardDiv.classList.add("card--container");
 
-        //check from localstorage if item id is present, if so use the corresponding
+        //check from sessionStorage if item id is present, if so use the corresponding
         //favorite id for data-favorite value
-        const cachedFavorite = window.localStorage.getItem(item.id);
+        const cachedFavorite = window.sessionStorage.getItem(item.id);
         if (cachedFavorite) {
           cardDiv.classList.add("is-favorite");
           cardDiv.setAttribute("data-favorite", cachedFavorite);
@@ -74,6 +80,10 @@ export function setupGallery(element) {
         `;
         element.appendChild(cardDiv);
         const button = document.getElementById(`favorite-btn-${item.id}`);
+        let sub_id = sessionStorage.getItem("userId");
+        if (sub_id === null) {
+          button.classList.add("hide");
+        }
         button.addEventListener("click", function (event) {
           toggleFavorite(cardDiv, cardDiv.id);
           event.preventDefault();
