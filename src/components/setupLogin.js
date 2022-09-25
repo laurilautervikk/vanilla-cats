@@ -3,6 +3,21 @@ import bcrypt from "bcryptjs";
 import { setupGallery } from "./setupGallery.js";
 
 export function setupLogin(element) {
+  //toggle main menu items
+  function toggleMenu(displayUsername) {
+    const displayName = document.getElementById("display-name");
+    displayName.innerHTML = displayUsername;
+    const favoritesLink = document.getElementById("favorites-btn");
+    const uploadsLink = document.getElementById("uploads-btn");
+    const loginLink = document.getElementById("login-btn");
+    const logoutLink = document.getElementById("logout-btn");
+    favoritesLink.classList.toggle("hide");
+    uploadsLink.classList.toggle("hide");
+    displayName.classList.toggle("hide");
+    loginLink.classList.toggle("hide");
+    logoutLink.classList.toggle("hide");
+    setupGallery(document.querySelector("#page-content"));
+  }
   //register and login
   function registerUser(inputUsername, inputPassword) {
     if (inputUsername && inputPassword) {
@@ -32,8 +47,9 @@ export function setupLogin(element) {
             password: passwordHashed,
           };
           users.push(newUser);
-          window.localStorage.setItem("users", JSON.stringify(users));
-          sessionStorage.setItem("userId", newUser.id);
+          localStorage.setItem("users", JSON.stringify(users));
+          localStorage.setItem("userId", newUser.id);
+          //sessionStorage.setItem("userId", newUser.id);
           //get modal
           const modal = document.getElementById("modal");
           //alert message
@@ -44,11 +60,7 @@ export function setupLogin(element) {
             alertBox.innerHTML = "";
           }, 1000);
           //toggle main menu
-          const loginLink = document.getElementById("login-btn");
-          const logoutLink = document.getElementById("logout-btn");
-          loginLink.classList.toggle("hide");
-          logoutLink.classList.toggle("hide");
-          setupGallery(document.querySelector("#page-content"));
+          toggleMenu(inputUsername);
         }
       } else {
         let newUsers = [];
@@ -88,7 +100,8 @@ export function setupLogin(element) {
         );
 
         if (isPasswordValid) {
-          sessionStorage.setItem("userId", dataFromLS.id);
+          //sessionStorage.setItem("userId", dataFromLS.id);
+          localStorage.setItem("userId", dataFromLS.id);
           //get modal
           const modal = document.getElementById("modal");
           //alert message
@@ -98,12 +111,7 @@ export function setupLogin(element) {
             modal.style.display = "none";
             alertBox.innerHTML = "";
           }, 1000);
-          //toggle main menu
-          const loginLink = document.getElementById("login-btn");
-          const logoutLink = document.getElementById("logout-btn");
-          loginLink.classList.toggle("hide");
-          logoutLink.classList.toggle("hide");
-          setupGallery(document.querySelector("#page-content"));
+          toggleMenu(dataFromLS.username);
         } else {
           const alertBox = document.getElementById("alert-box");
           alertBox.innerHTML = `<span style="color:red;">Wrong password</span>`;
@@ -127,15 +135,35 @@ export function setupLogin(element) {
     }
   }
 
+  function renewLogin() {
+    const loggedInUserId = localStorage.getItem("userId");
+    if (loggedInUserId) {
+      console.log("loggedInUserId ", loggedInUserId);
+
+      let users = JSON.parse(localStorage.getItem("users"));
+      //iterate over ids in LS
+      let dataFromLS = {};
+      Object.keys(users).forEach(function (key) {
+        if (loggedInUserId === users[key].id) {
+          dataFromLS = {
+            id: users[key].id,
+            username: users[key].username,
+            password: users[key].password,
+          };
+        }
+      });
+      //toggle main menu
+      toggleMenu(dataFromLS.username);
+    } else {
+      console.log("Nobody logged in");
+    }
+  }
+
   function logoutUser() {
     //delete user from sessionstorage
     sessionStorage.clear();
-    //toggle main menu
-    const loginLink = document.getElementById("login-btn");
-    const logoutLink = document.getElementById("logout-btn");
-    loginLink.classList.toggle("hide");
-    logoutLink.classList.toggle("hide");
-    setupGallery(document.querySelector("#page-content"));
+    localStorage.removeItem("userId");
+    toggleMenu();
   }
 
   function drawModal() {
@@ -173,6 +201,7 @@ export function setupLogin(element) {
     };
   }
 
+  renewLogin();
   drawModal();
 
   //toggle between login and register

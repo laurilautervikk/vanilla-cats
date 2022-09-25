@@ -1,6 +1,8 @@
 # vanilla-cats
 
-Learning to consume the Cats API
+Learning to consume the Cat API
+
+[Link to API Docs](https://developers.thecatapi.com/view-account/ylX4blBYT9FaoVd6OhvR?report=bOoHBz-8t)
 
 Requirements
 

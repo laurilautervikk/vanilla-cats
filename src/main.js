@@ -8,6 +8,8 @@ axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 axios.defaults.headers.common["x-api-key"] = import.meta.env.VITE_API_KEY;
 sessionStorage.clear();
 
+//TODO: implement spinners for loading images
+
 document.querySelector("#app").innerHTML = /*html*/ `
   <div id="main-container" class="container">
     <nav class="nav">
@@ -19,5 +21,5 @@ document.querySelector("#app").innerHTML = /*html*/ `
 `;
 
 setupNavbar(document.querySelector("nav"));
-setupGallery(document.querySelector("#page-content"));
+//setupGallery(document.querySelector("#page-content"));
 setupLogin(document.querySelector("#modal-wrapper"));

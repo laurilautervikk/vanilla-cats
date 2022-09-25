@@ -1,33 +1,29 @@
 import axios from "axios";
 
-export function setupGallery(element) {
+//TODO: Endless scroll, image loaders
+
+export async function setupGallery(element) {
+  //clear old content
   const page = document.getElementById("page-content");
   page.innerHTML = "";
   console.log("SET UP GALLERY DONE");
+  //toggle favotite
   async function toggleFavorite(cardDiv, image_id) {
-    let sub_id = sessionStorage.getItem("userId");
-    if (sub_id === null) {
-      sub_id = "stranger";
-    }
-    console.log("sub id ", sub_id);
+    let sub_id = localStorage.getItem("userId");
     const payload = {
       image_id: image_id,
       sub_id: sub_id,
     };
 
     //set favorite
-    if (cardDiv.classList.contains("not-favorite")) {
+    if (cardDiv.classList.contains("is-favorite")) {
+      //delete favorite
       try {
-        console.log("sub id at axios", sub_id);
-        const response = await axios.post("/favourites", payload);
-        console.log("post response ", response.data);
+        const response = await axios.delete(
+          `/favourites/${cardDiv.dataset.favorite}`
+        );
         if (response.data.message === "SUCCESS") {
-          console.log("Favorite added");
-          cardDiv.setAttribute("data-favorite", response.data.id);
-          cardDiv.classList.remove("not-favorite");
-          cardDiv.classList.add("is-favorite");
-          //add id and favorite id to sessionStorage
-          window.sessionStorage.setItem(image_id, response.data.id);
+          cardDiv.classList.toggle("is-favorite");
         } else {
           console.error("error ", error);
         }
@@ -35,18 +31,12 @@ export function setupGallery(element) {
         console.error("error ", error);
       }
     } else {
-      //delete favorite
       try {
-        const response = await axios.delete(
-          `/favourites/${cardDiv.dataset.favorite}`
-        );
-        console.log("delete response ", response.data);
+        const response = await axios.post("/favourites", payload);
         if (response.data.message === "SUCCESS") {
-          console.log("Favorite removed");
-          cardDiv.classList.remove("is-favorite");
-          cardDiv.classList.add("not-favorite");
-          //remove id and favorite id from local storage
-          window.sessionStorage.removeItem(image_id);
+          console.log("Favorite added");
+          cardDiv.setAttribute("data-favorite", response.data.id);
+          cardDiv.classList.toggle("is-favorite");
         } else {
           console.error("error ", error);
         }
@@ -55,44 +45,80 @@ export function setupGallery(element) {
       }
     }
   }
+
   //draw gallery
   async function getCats() {
-    try {
-      const response = await axios.get("/images/search?limit=12&order=Desc");
-      response.data.forEach((item) => {
+    //get cats from APIlet
+    const response = await axios.get("/images/search?limit=6&order=Desc");
+    let cats = response.data;
+    console.log("cats from API ", cats);
+    //get cats and start to draw cardDiv
+
+    //check if anybody lgged in
+    const loggedInUserId = localStorage.getItem("userId");
+    if (loggedInUserId) {
+      //get favorites for logged in user
+      let favorites = {};
+      const params = {
+        sub_id: loggedInUserId,
+        order: "DESC",
+      };
+      const response = await axios.get("/favourites", { params });
+      favorites = response.data;
+      console.log("favs ", favorites);
+      let favoriteList = [];
+      for (let i = 0; i < favorites.length; i++) {
+        favoriteList.push(favorites[i].image_id);
+      }
+      console.log("favList ", favoriteList);
+
+      cats.forEach((item) => {
+        //creat a cat card
         const cardDiv = document.createElement("div");
         cardDiv.classList.add("card--container");
-
-        //check from sessionStorage if item id is present, if so use the corresponding
-        //favorite id for data-favorite value
-        const cachedFavorite = window.sessionStorage.getItem(item.id);
-        if (cachedFavorite) {
-          cardDiv.classList.add("is-favorite");
-          cardDiv.setAttribute("data-favorite", cachedFavorite);
-        } else {
-          cardDiv.classList.add("not-favorite");
-          cardDiv.setAttribute("data-favorite", item.id);
-        }
+        //set id for cardDiv
         cardDiv.id = item.id;
         cardDiv.innerHTML = /*html*/ `
         <img src="${item.url}" alt="cat" class="card--image"/>
-        <button class="card--favorite-btn" id="favorite-btn-${item.id}"><i class="fa fa-fw fa-heart"></i></button>
+        <button class="card--favorite-btn" id="favorite-btn-${item.id}">
+        <i class="fa fa-fw fa-heart"></i></button>
         `;
+        cardDiv.dataset.favorite = item.id;
         element.appendChild(cardDiv);
         const button = document.getElementById(`favorite-btn-${item.id}`);
-        let sub_id = sessionStorage.getItem("userId");
-        if (sub_id === null) {
-          button.classList.add("hide");
-        }
         button.addEventListener("click", function (event) {
           toggleFavorite(cardDiv, cardDiv.id);
           event.preventDefault();
         });
+        //check if id in favorite list, if so make button red
+        if (favoriteList.includes(item.id)) {
+          cardDiv.classList.add("is-favorite");
+          for (let i = 0; i < favorites.length; i++) {
+            if ((item.id = favorites[i].id)) {
+              cardDiv.dataset.favorite = favorites[i].id;
+            }
+          }
+        }
       });
-    } catch (error) {
-      console.error("error ", error);
+    } else {
+      //get cats from APIlet
+    const response = await axios.get("/images/search?limit=6&order=Desc");
+    let cats = response.data;
+    console.log("cats from API ", cats);
+    //get cats and start to draw cardDiv
+    cats.forEach((item) => {
+      //creat a cat card
+      const cardDiv = document.createElement("div");
+      cardDiv.classList.add("card--container");
+      //set id for cardDiv
+      cardDiv.id = item.id;
+      cardDiv.innerHTML = /*html*/ `
+      <img src="${item.url}" alt="cat" class="card--image"/>
+      `;
+      element.appendChild(cardDiv);
+    });
     }
   }
 
-  getCats();
+  await getCats();
 }

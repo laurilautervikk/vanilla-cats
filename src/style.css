@@ -58,16 +58,8 @@ a {
   color: var(--white);
 }
 
-/* a:focus {
-  color: var(--black)
-} */
-
 .fa {
   font-size: 4em;
-}
-
-.not-favorite i {
-  color: var(--grey);
 }
 
 .is-favorite i {
@@ -78,12 +70,28 @@ a {
   display: none;
 }
 
+.hide-icon-OOO {
+  display: none;
+}
+
+.menu-icon .fa {
+  font-size: 1em;
+}
+
+#display-name {
+  font-size: 0.8em;
+  margin-left: 5px;
+  padding: 5px;
+  background-color: var(--black);
+  border-radius: 9px;
+}
 
 /* fonts */
 
 .container {
   width: 100%;
   text-align: center;
+  position: relative;
 }
 
 #page-content {
@@ -121,6 +129,7 @@ a {
   cursor: pointer;
   background: none;
   border: none;
+  color: var(--grey);
 }
 
 .card--favorite-btn:hover {
@@ -128,9 +137,6 @@ a {
 }
 
 /* NAV */
-.logo {
-  float: left;
-}
 
 nav {
   position: fixed;
@@ -145,10 +151,12 @@ nav {
   margin: 0;
   padding-left: 0;
   min-width: 100%;
+  white-space: nowrap;
 
   display: flex;
   flex-direction: row;
   justify-content: center;
+  align-items: center;
 
   color: var(--white);
   overflow: hidden;
@@ -178,29 +186,13 @@ nav li:hover {
   background-color: var(--black);
 }
 
-@media screen and (max-width: 800px) {
-  nav {
-    margin-top: auto;
-    margin-bottom: 0;
-    min-width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .nav--list {
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  #gallery {
-    margin-top: 280px;
-  }
+.menu-icon {
+  display: none;
 }
 
-/* NAV END */
+.menu-name {
+  display: block;
+}
 
 /* MODAL START */
 /* The Modal (background) */
@@ -228,7 +220,8 @@ nav li:hover {
   margin: 15% auto; /* 15% from the top and centered */
   padding: 20px;
   border: 1px solid #888;
-  width: 60%; /* Could be more or less, depending on screen size */
+  width: 40%; /* Could be more or less, depending on screen size */
+  max-width: 440px;
   border-radius: 9px;
   font-size: 1.6em;
 }
@@ -280,5 +273,46 @@ nav li:hover {
 }
 /*fonts inputs*/
 
-
 /* MODAL END */
+
+@media screen and (max-width: 800px) {
+  #page-content {
+    margin-top: 30px;
+  }
+
+  nav {
+    bottom: 0px;
+    width: 100%;
+  }
+
+  .nav--list {
+    padding: 3px;
+    justify-content: space-around;
+  }
+
+  .nav--list li {
+    border-radius: 9px;
+  }
+
+  .menu-icon {
+    display: block;
+  }
+
+  .menu-name {
+    display: none;
+  }
+
+  nav li {
+    font-size: 32px;
+    padding: 0 16px;
+    margin: 0px;
+  }
+
+  /* Modal Content/Box */
+  .modal--content {
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 240px;
+  }
+}
+
+/* NAV END */

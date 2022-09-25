@@ -8,12 +8,12 @@ export function setupNavbar(element) {
   navList.classList.add("nav--list");
 
   navList.innerHTML = /*html*/ `
-  <li class="btn active" id="cats-btn"><a href="#">Cats</a></li>
-  <li class="btn" id="favorites-btn"><a href="#">Favorites</a> </li>
-  <li class="btn" id="uploads-btn"><a href="#">Uploads</a></li>
-  <li class="btn" id="login-btn"><a href="#">Login</a></li>
-  <li class="btn hide" id="logout-btn"><a href="#">Log out</a></li>
-        `;
+  <li class="btn active" id="cats-btn"><a href="#"><span class="menu-icon"><i class="fa fa-fw fa-cat"></i></span><span class="menu-name">Cats</span></a></li>  
+  <li class="btn hide" id="favorites-btn"><a href="#"><span class="menu-icon"><i class="fa fa-fw fa-heart"></i></span><span class="menu-name">Favorites</span></a> </li>
+  <li class="btn hide" id="uploads-btn"><a href="#"><span class="menu-icon"><i class="fa fa-fw fa-cloud-upload"></i></span><span class="menu-name">Uploads</span></a></li>
+  <li class="btn" id="login-btn"><a href="#"><span class="menu-icon"><i class="fa fa-fw fa-sign-in-alt"></i></span><span class="menu-name">Login</span></a></li>
+  <li class="btn hide" id="logout-btn"><a href="#"><span class="menu-icon"><i class="fa fa-fw fa-sign-out"></i></span><span class="menu-name">Log out<span class="hide" id="display-name"></span></span></a></li>
+  `;
 
   element.appendChild(navList);
 
