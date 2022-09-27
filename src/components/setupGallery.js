@@ -49,7 +49,7 @@ export async function setupGallery(element) {
   //draw gallery
   async function getCats() {
     //get cats from APIlet
-    const response = await axios.get("/images/search?limit=6&order=Desc");
+    const response = await axios.get("/images/search?limit=12&order=Desc");
     let cats = response.data;
     console.log("cats from API ", cats);
     //get cats and start to draw cardDiv
