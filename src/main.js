@@ -21,5 +21,4 @@ document.querySelector("#app").innerHTML = /*html*/ `
 `;
 
 setupNavbar(document.querySelector("nav"));
-//setupGallery(document.querySelector("#page-content"));
 setupLogin(document.querySelector("#modal-wrapper"));

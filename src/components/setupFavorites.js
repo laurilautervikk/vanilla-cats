@@ -1,12 +1,12 @@
 import axios from "axios";
 
-//TODO: make particular div dissapear at once if unfavorited
+//TODO: implement image loader
 
 export function setupFavorites(element) {
   //clear old content
   const page = document.getElementById("page-content");
   page.innerHTML = "";
-  console.log("SETUP FAVORITES", element);
+  console.log("SETUP FAVORITES DONE");
 
   //toggle favotite
   async function toggleFavorite(cardDiv, image_id) {
@@ -71,7 +71,7 @@ export function setupFavorites(element) {
         //set id for cardDiv
         cardDiv.id = item.id;
         cardDiv.innerHTML = /*html*/ `
-        <img src="${item.image.url}" alt="cat" class="card--image"/>
+        <img src="${item.image.url}" lowsrc="paw.svg" alt="cat" class="card--image"/>
         <button class="card--favorite-btn" id="favorite-btn-${item.id}">
         <i class="fa fa-fw fa-heart"></i></button>
         `;

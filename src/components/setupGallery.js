@@ -79,7 +79,7 @@ export async function setupGallery(element) {
         //set id for cardDiv
         cardDiv.id = item.id;
         cardDiv.innerHTML = /*html*/ `
-        <img src="${item.url}" alt="cat" class="card--image"/>
+        <img src="${item.url}" lowsrc="paw.svg" alt="cat" class="card--image"/>
         <button class="card--favorite-btn" id="favorite-btn-${item.id}">
         <i class="fa fa-fw fa-heart"></i></button>
         `;
@@ -101,7 +101,7 @@ export async function setupGallery(element) {
         }
       });
     } else {
-      //get cats from APIlet
+      //get cats from API for unauthorized user
     const response = await axios.get("/images/search?limit=6&order=Desc");
     let cats = response.data;
     console.log("cats from API ", cats);
