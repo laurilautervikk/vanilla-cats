@@ -19,6 +19,6 @@ document.querySelector("#app").innerHTML = /*html*/ `
         <div id="modal-wrapper" data-active="true"></div>
     </div>
 `;
-
+setupGallery(document.querySelector("#page-content"));
 setupNavbar(document.querySelector("nav"));
 setupLogin(document.querySelector("#modal-wrapper"));
