@@ -22,29 +22,29 @@ export function setupFavorites(element) {
       //delete favorite
       try {
         const response = await axios.delete(
-          `/favourites/${cardDiv.dataset.favorite}`
+          `api/favourites/${cardDiv.dataset.favorite}`
         );
         if (response.data.message === "SUCCESS") {
           cardDiv.classList.toggle("is-favorite");
           cardDiv.remove();
         } else {
-          console.error("error ", error);
+          console.error("error: delete favourite not successful");
         }
       } catch (error) {
-        console.error("error ", error);
+        console.error("error: delete request failed");
       }
     } else {
       try {
-        const response = await axios.post("/favourites", payload);
+        const response = await axios.post("api/favourites", payload);
         if (response.data.message === "SUCCESS") {
           console.log("Favorite added");
           cardDiv.setAttribute("data-favorite", response.data.id);
           cardDiv.classList.toggle("is-favorite");
         } else {
-          console.error("error ", error);
+          console.error("error: add favourite not successful");
         }
       } catch (error) {
-        console.error("error ", error);
+        console.error("error: add favourite request failed");
       }
     }
   }
@@ -59,7 +59,7 @@ export function setupFavorites(element) {
         sub_id: loggedInUserId,
         order: "DESC",
       };
-      const response = await axios.get("/favourites", { params });
+      const response = await axios.get("api/favourites", { params });
       favorites = response.data;
       console.log("favs ", favorites);
 
@@ -85,7 +85,7 @@ export function setupFavorites(element) {
         //make button red
       });
     } catch (error) {
-      console.error("error ", error);
+      console.error("error ");
     }
   }
 

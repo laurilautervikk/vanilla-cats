@@ -14,34 +14,35 @@ export async function setupGallery(element) {
       image_id: image_id,
       sub_id: sub_id,
     };
+    console.log("payload ", payload);
 
     //set favorite
     if (cardDiv.classList.contains("is-favorite")) {
       //delete favorite
       try {
         const response = await axios.delete(
-          `/favourites/${cardDiv.dataset.favorite}`
+          `api/favourites/${cardDiv.dataset.favorite}`
         );
         if (response.data.message === "SUCCESS") {
           cardDiv.classList.toggle("is-favorite");
         } else {
-          console.error("error ", error);
+          console.error("error: delete favourite not successful");
         }
       } catch (error) {
-        console.error("error ", error);
+        console.error("error: delete request failed");
       }
     } else {
       try {
-        const response = await axios.post("/favourites", payload);
+        const response = await axios.post("api/favourites", payload);
         if (response.data.message === "SUCCESS") {
           console.log("Favorite added");
           cardDiv.setAttribute("data-favorite", response.data.id);
           cardDiv.classList.toggle("is-favorite");
         } else {
-          console.error("error ", error);
+          console.error("error: add favourite not successful");
         }
       } catch (error) {
-        console.error("error ", error);
+        console.error("error: add favourite request failed");
       }
     }
   }
@@ -49,7 +50,7 @@ export async function setupGallery(element) {
   //draw gallery
   async function getCats() {
     //get cats from APIlet
-    const response = await axios.get("/images/search?limit=12&order=Desc");
+    const response = await axios.get("api/images/search?limit=6&order=Desc");
     let cats = response.data;
     console.log("cats from API ", cats);
     //get cats and start to draw cardDiv
@@ -63,7 +64,7 @@ export async function setupGallery(element) {
         sub_id: loggedInUserId,
         order: "DESC",
       };
-      const response = await axios.get("/favourites", { params });
+      const response = await axios.get("api/favourites", { params });
       favorites = response.data;
       console.log("favs ", favorites);
       let favoriteList = [];
@@ -73,7 +74,7 @@ export async function setupGallery(element) {
       console.log("favList ", favoriteList);
 
       cats.forEach((item) => {
-        //creat a cat card
+        //create a cat card
         const cardDiv = document.createElement("div");
         cardDiv.classList.add("card--container");
         //set id for cardDiv
@@ -102,21 +103,21 @@ export async function setupGallery(element) {
       });
     } else {
       //get cats from API for unauthorized user
-    const response = await axios.get("/images/search?limit=6&order=Desc");
-    let cats = response.data;
-    console.log("cats from API ", cats);
-    //get cats and start to draw cardDiv
-    cats.forEach((item) => {
-      //creat a cat card
-      const cardDiv = document.createElement("div");
-      cardDiv.classList.add("card--container");
-      //set id for cardDiv
-      cardDiv.id = item.id;
-      cardDiv.innerHTML = /*html*/ `
+      const response = await axios.get("api/images/search?limit=6&order=Desc");
+      let cats = response.data;
+      console.log("cats from API ", cats);
+      //get cats and start to draw cardDiv
+      cats.forEach((item) => {
+        //creat a cat card
+        const cardDiv = document.createElement("div");
+        cardDiv.classList.add("card--container");
+        //set id for cardDiv
+        cardDiv.id = item.id;
+        cardDiv.innerHTML = /*html*/ `
       <img src="${item.url}" alt="cat" class="card--image"/>
       `;
-      element.appendChild(cardDiv);
-    });
+        element.appendChild(cardDiv);
+      });
     }
   }
 

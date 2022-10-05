@@ -1,28 +1,36 @@
-const axios = require("axios").default; //remove later
-const bodyParser = require("body-parser"); //?
+const bodyParser = require("body-parser");
 const url = require("url");
 const express = require("express");
 const router = express.Router();
 const needle = require("needle");
+const cors = require("cors");
+const multer = require("multer");
+const util = require("util");
+const upload = multer({
+  limits: {
+    fileSize: 5000000,
+  },
+  image: {
+    type: Buffer,
+  },
+});
 
 const API_BASE_URL = process.env.API_BASE_URL;
 const API_KEY_NAME = process.env.API_KEY_NAME;
 const API_KEY_VALUE = process.env.API_KEY_VALUE;
-axios.defaults.baseURL = process.env.BASE_URL;
-axios.defaults.headers.common["x-api-key"] = process.env.API_VALUE;
 
+router.use(cors());
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
 //GET endpoints
-//get images //WORKS needle
+//get images //WORKS
 router.get("/images/search", async (req, res) => {
   try {
-    console.log("at try");
-    console.log(url.parse(req.url, true).query);
     const requestHeaders = {
       headers: {
         [API_KEY_NAME]: API_KEY_VALUE,
+        "Content-Type": "application/json",
       },
     };
     const params = new URLSearchParams({
@@ -33,45 +41,46 @@ router.get("/images/search", async (req, res) => {
       `${API_BASE_URL}/images/search?${params}`,
       requestHeaders
     );
-    const data = apiRes.body;
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`REQUEST: ${API_BASE_URL}/images/search?${params}`);
-    }
-    res.status(200).json(data);
+    res.status(apiRes.statusCode).json(apiRes.body);
   } catch {
     console.log("at error");
     res.status(500).json({ error: "error get images" });
   }
 });
 
-//get favorites //BROKEN axios
+//get favorites //WORKS
 router.get("/favourites", async (req, res) => {
   try {
-    console.log(url.parse(req.url, true).query);
-    console.log(JSON.stringify(req.headers));
-
-    const params = new URLSearchParams({
-      ...url.parse(req.url, true).query,
-    });
-    const apiResponse = await axios.get(`/favourites?${params}`);
-    const data = apiResponse.data;
-
-    res.status(200).json(data);
-  } catch {
-    res.status(500).json({ error: "get error" });
-  }
-});
-
-//get uploads  //WORKS needle
-router.get("/images", async (req, res) => {
-  try {
-    console.log(url.parse(req.url, true).query);
     const requestHeaders = {
       headers: {
         [API_KEY_NAME]: API_KEY_VALUE,
+        "Content-Type": "application/json",
       },
     };
-    console.log(requestHeaders);
+    const params = new URLSearchParams({
+      ...url.parse(req.url, true).query,
+    });
+    const apiRes = await needle(
+      "get",
+      `${API_BASE_URL}/favourites?${params}`,
+      requestHeaders
+    );
+    res.status(apiRes.statusCode).json(apiRes.body);
+  } catch {
+    console.log("at error");
+    res.status(500).json({ error: "error get favs" });
+  }
+});
+
+//get uploads //WORKS
+router.get("/images", async (req, res) => {
+  try {
+    const requestHeaders = {
+      headers: {
+        [API_KEY_NAME]: API_KEY_VALUE,
+        "Content-Type": "application/json",
+      },
+    };
     const params = new URLSearchParams({
       ...url.parse(req.url, true).query,
     });
@@ -80,47 +89,116 @@ router.get("/images", async (req, res) => {
       `${API_BASE_URL}/images?${params}`,
       requestHeaders
     );
-    const data = apiRes.body;
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`REQUEST: ${API_BASE_URL}/images?${params}`);
-    }
-    res.status(200).json(data);
+    res.status(apiRes.statusCode).json(apiRes.body);
   } catch {
     res.status(500).json({ error: "error" });
   }
 });
 
 //POST endpoints
-//set favorite //BROKEN
+//set favorite //WORKS
 router.post("/favourites", async (req, res) => {
   try {
-    console.log("query params ", url.parse(req.url, true).query);
-
     const requestHeaders = {
       headers: {
         [API_KEY_NAME]: API_KEY_VALUE,
+        "Content-Type": "application/json",
       },
     };
 
-    //params not needed here
-    const params = new URLSearchParams({
-      ...url.parse(req.url, true).query,
-    });
-    console.log("req.body ");
+    const body = JSON.stringify(req.body);
 
     const apiRes = await needle(
       "post",
       `${API_BASE_URL}/favourites`,
-      req.body,
+      body,
       requestHeaders
     );
-    const data = apiRes.data;
-    //log
-    console.log("res data ", apiRes.body);
 
-    res.status(200).json(data);
+    res.status(apiRes.statusCode).json(apiRes.body);
   } catch {
-    res.status(500).json({ error: "post error" });
+    res.status(500).json({ error: "error: add favourite" });
+  }
+});
+
+//delete favorite //WORKS
+router.delete("/favourites/:favouriteId", async (req, res) => {
+  try {
+    const requestHeaders = {
+      headers: {
+        [API_KEY_NAME]: API_KEY_VALUE,
+        "Content-Type": "application/json",
+      },
+    };
+    const body = JSON.stringify(req.body);
+    const apiRes = await needle(
+      "delete",
+      `${API_BASE_URL}/favourites/${req.params.favouriteId}`,
+      body,
+      requestHeaders
+    );
+
+    res.status(apiRes.statusCode).json(apiRes.body);
+  } catch {
+    res.status(500).json({ error: "error: delete favourite" });
+  }
+});
+
+//upload image //BROKEN
+router.post("/images/upload", upload.single("file"), async (req, res) => {
+  try {
+    const requestHeaders = {
+      headers: {
+        [API_KEY_NAME]: API_KEY_VALUE,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    console.log("req.file ", req.file);
+    console.log("req.body.sub_id ", req.body.sub_id);
+
+    let formFile = new FormData();
+    formFile.append("sub_id", req.body.sub_id);
+    formFile.append("file", req.file);
+
+    console.log("formFile ", formFile);
+
+    const apiRes = await needle(
+      "post",
+      `${API_BASE_URL}/images/upload`,
+      formFile,
+      requestHeaders,
+      { multipart: true }
+    );
+
+    res.status(apiRes.statusCode).json(apiRes.body);
+  } catch {
+    res.status(500).json({ error: "error: upload image" });
+  }
+});
+
+//delete uploaded image //WORKS ??
+router.delete("/images/:id", async (req, res) => {
+  try {
+    const requestHeaders = {
+      headers: {
+        [API_KEY_NAME]: API_KEY_VALUE,
+        "Content-Type": "application/json",
+      },
+    };
+
+    const body = JSON.stringify(req.body);
+    console.log("req.params ", req.params);
+    const apiRes = await needle(
+      "delete",
+      `${API_BASE_URL}/images/${req.params.id}`,
+      body,
+      requestHeaders
+    );
+
+    res.status(apiRes.statusCode).json(apiRes.body);
+  } catch {
+    res.status(500).json({ error: "error: delete image" });
   }
 });
 

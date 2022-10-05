@@ -4,8 +4,8 @@ import { setupGallery } from "./components/setupGallery.js";
 import { setupNavbar } from "./components/setupNavbar";
 import { setupLogin } from "./components/setupLogin";
 
-axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
-axios.defaults.headers.common["x-api-key"] = import.meta.env.VITE_API_KEY;
+axios.defaults.baseURL = "http://localhost:5000/";
+
 sessionStorage.clear();
 
 //TODO: implement spinners for loading images

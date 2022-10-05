@@ -19,7 +19,7 @@ export async function setupUploads(element) {
   <div class="upload-div">
   <h3>Upload an image</h3>
   <form>
-  <input type="file" id="image-input" accept="image/jpeg, image/png, image/jpg">
+  <input type="file" id="image-input" name="file" accept="image/jpeg, image/png, image/jpg">
   </form>
   <br>
   <div class="upload-image-div">
@@ -30,25 +30,20 @@ export async function setupUploads(element) {
   </div>
   `;
   document.getElementById("loader").style.display = "none";
-
   const imageInput = document.querySelector("#image-input");
 
   async function uploadImage() {
     document.getElementById("loader").style.display = "block";
+    //collect formadata
     let formData = new FormData();
     formData.append("sub_id", loggedInUserId);
     formData.append("file", imageInput.files[0]);
-
-    console.log("formdata >> ", formData);
+    //display formdata
+    console.log("file from input ", imageInput.files[0]);
 
     try {
-      await axios.post("/images/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log("upload OK");
-      //do stuff
+      const upload = await axios.post("api/images/upload", formData);
+      console.log("upload ", upload);
       //hide spinner
       document.getElementById("loader").style.display = "none";
       //clear preview
@@ -75,7 +70,7 @@ export async function setupUploads(element) {
   async function deleteUpload(cardDiv, image_id) {
     //delete image
     try {
-      await axios.delete(`/images/${image_id}`);
+      await axios.delete(`api/images/${image_id}`);
       cardDiv.remove();
       await getUploadedImages();
     } catch (error) {
@@ -97,7 +92,7 @@ export async function setupUploads(element) {
       order: "DESC",
       limit: 100,
     };
-    const response = await axios.get("/images", { params });
+    const response = await axios.get("api/images", { params });
     uploadedImages = response.data;
     console.log("uploadedImages ", uploadedImages);
 

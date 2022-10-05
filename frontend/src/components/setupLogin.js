@@ -1,6 +1,6 @@
-import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
 import { setupGallery } from "./setupGallery.js";
+import axios from "axios";
 
 export function setupLogin(element) {
   //toggle main menu items
@@ -18,41 +18,34 @@ export function setupLogin(element) {
     logoutLink.classList.toggle("hide");
     setupGallery(document.querySelector("#page-content"));
   }
-  //register and login
-  function registerUser(inputUsername, inputPassword) {
+  //register user
+  async function registerUser(inputUsername, inputPassword) {
+    //check if there is any input
     if (inputUsername && inputPassword) {
-      //check if LS has user object
-      if (localStorage.hasOwnProperty("users")) {
-        let users = JSON.parse(localStorage.getItem("users"));
-        //iterate over usernames in LS
-        let userExists = false;
-        Object.keys(users).forEach(function (key) {
-          if (inputUsername === users[key].username) {
-            return (userExists = true);
-          }
-        });
+      //try to get user from db
+      const userExists = await axios.get(`auth/user/username/${inputUsername}`);
+      console.log("userExists ", userExists.username);
+      //check if user exists
+      if (userExists.username) {
+        const alertBox = document.getElementById("alert-box");
+        alertBox.innerHTML = `<span style="color:red;">Failed, user exists already.</span>`;
+        setTimeout(() => {
+          alertBox.innerHTML = "";
+        }, 1000);
+      } else {
+        //user doesnt exist , create one
+        //encrypt password
+        const passwordHashed = bcrypt.hashSync(inputPassword, 10);
+        let body = {
+          username: inputUsername,
+          password: passwordHashed,
+        };
 
-        if (userExists === true) {
-          const alertBox = document.getElementById("alert-box");
-          alertBox.innerHTML = `<span style="color:red;">Failed, user exists already.</span>`;
-          setTimeout(() => {
-            alertBox.innerHTML = "";
-          }, 1000);
-        } else {
-          //encrypt password
-          const passwordHashed = bcrypt.hashSync(inputPassword, 10);
-          let newUser = {
-            id: uuidv4(),
-            username: inputUsername,
-            password: passwordHashed,
-          };
-          users.push(newUser);
-          localStorage.setItem("users", JSON.stringify(users));
-          localStorage.setItem("userId", newUser.id);
-          //sessionStorage.setItem("userId", newUser.id);
-          //get modal
+        try {
+          const registeredUser = await axios.post(`auth/register`, body);
+          localStorage.setItem("userId", registeredUser.id);
+          //show message in modal
           const modal = document.getElementById("modal");
-          //alert message
           const alertBox = document.getElementById("alert-box");
           alertBox.innerHTML = `<span style="color:white;">User created successfully</span>`;
           setTimeout(() => {
@@ -60,14 +53,13 @@ export function setupLogin(element) {
             alertBox.innerHTML = "";
           }, 1000);
           //toggle main menu
-          toggleMenu(inputUsername);
+          toggleMenu(registeredUser.username);
+        } catch (error) {
+          console.log("User regisrtation failed");
         }
-      } else {
-        let newUsers = [];
-        window.localStorage.setItem("users", JSON.stringify(newUsers));
-        registerUser(inputUsername, inputPassword);
       }
     } else {
+      //no inputs
       const alertBox = document.getElementById("alert-box");
       alertBox.innerHTML = `<span style="color:red;">Insert something</span>`;
       setTimeout(() => {
@@ -76,42 +68,34 @@ export function setupLogin(element) {
     }
   }
 
-  function loginUser(inputUsername, inputPassword) {
+  //login user
+  async function loginUser(inputUsername, inputPassword) {
+    //check if there is input
     if (inputUsername && inputPassword) {
-      let users = JSON.parse(localStorage.getItem("users"));
-      //iterate over usernames in LS
-      let dataFromLS = {};
-      Object.keys(users).forEach(function (key) {
-        if (inputUsername === users[key].username) {
-          dataFromLS = {
-            id: users[key].id,
-            username: users[key].username,
-            password: users[key].password,
-          };
-          return dataFromLS;
-        }
-      });
-
-      if (dataFromLS.username) {
-        //check password
+      //get user from db
+      const response = await axios.get(`auth/user/username/${inputUsername}`);
+      const userExists = response.data;
+      console.log("userExists.username ", userExists.username);
+      //if user exists, compare passwords
+      if (userExists.username) {
         const isPasswordValid = bcrypt.compareSync(
           inputPassword,
-          dataFromLS.password
+          userExists.password
         );
 
         if (isPasswordValid) {
-          //sessionStorage.setItem("userId", dataFromLS.id);
-          localStorage.setItem("userId", dataFromLS.id);
-          //get modal
+          console.log("userExists.username ", userExists.username);
+          console.log("userExists.id ", userExists._id);
+          localStorage.setItem("userId", userExists._id);
+          //show message in modal
           const modal = document.getElementById("modal");
-          //alert message
           const alertBox = document.getElementById("alert-box");
           alertBox.innerHTML = `<span style="color:white;">Login successful</span>`;
           setTimeout(() => {
             modal.style.display = "none";
             alertBox.innerHTML = "";
           }, 1000);
-          toggleMenu(dataFromLS.username);
+          toggleMenu(userExists.username);
         } else {
           const alertBox = document.getElementById("alert-box");
           alertBox.innerHTML = `<span style="color:red;">Wrong password</span>`;
@@ -135,32 +119,22 @@ export function setupLogin(element) {
     }
   }
 
-  function renewLogin() {
+  async function renewLogin() {
+    //re-log in the logged in user after refresh
     const loggedInUserId = localStorage.getItem("userId");
     if (loggedInUserId) {
-      console.log("loggedInUserId ", loggedInUserId);
-
-      let users = JSON.parse(localStorage.getItem("users"));
-      //iterate over ids in LS
-      let dataFromLS = {};
-      Object.keys(users).forEach(function (key) {
-        if (loggedInUserId === users[key].id) {
-          dataFromLS = {
-            id: users[key].id,
-            username: users[key].username,
-            password: users[key].password,
-          };
-        }
-      });
+      const response = await axios.get(`auth/user/id/${loggedInUserId}`);
+      const userExists = response.data;
+      console.log("userExists.username ", userExists.username);
       //toggle main menu
-      toggleMenu(dataFromLS.username);
+      toggleMenu(userExists.username);
     } else {
       console.log("Nobody logged in");
     }
   }
 
   function logoutUser() {
-    //delete user from sessionstorage
+    //delete user from localstorage, clear sessionstorage
     sessionStorage.clear();
     localStorage.removeItem("userId");
     toggleMenu();
