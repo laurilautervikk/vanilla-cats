@@ -197,24 +197,25 @@ nav li:hover {
 }
 
 #display-image {
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
   border: 1px solid var(--black);
   border-radius: 9px;
   background-position: center;
   background-size: cover;
-  margin: 20px;
+  margin: 10px;
 }
 
 .upload-div {
+  height: 300px;
+  width: 300px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-width: 80%;
+  min-width: fit-content;
   background-color: var(--black);
   border-radius: 9px;
-  padding: 20px;
 }
 
 .upload-image-div {
@@ -348,6 +349,7 @@ nav li:hover {
 @media screen and (max-width: 800px) {
   #page-content {
     margin-top: 30px;
+    margin-bottom: 80px;
   }
 
   nav {

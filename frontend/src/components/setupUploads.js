@@ -18,7 +18,7 @@ export async function setupUploads(element) {
   page.innerHTML = /*html*/ `
   <div class="upload-div">
   <h3>Upload an image</h3>
-  <form>
+  <form action="/api/images/upload" method="POST" enctype="multipart/form-data">
   <input type="file" id="image-input" name="file" accept="image/jpeg, image/png, image/jpg">
   </form>
   <br>
@@ -39,6 +39,7 @@ export async function setupUploads(element) {
     formData.append("sub_id", loggedInUserId);
     formData.append("file", imageInput.files[0]);
     //display formdata
+    console.log("formData from front ", formData);
     console.log("file from input ", imageInput.files[0]);
 
     try {
@@ -49,8 +50,9 @@ export async function setupUploads(element) {
       //clear preview
       document.querySelector("#display-image").style.backgroundImage = "";
       await getUploadedImages();
+      console.log("Upload SUCCESS at FE");
     } catch {
-      console.log("FAILURE!!");
+      console.log("Upload FAILED at FE");
     }
   }
 
