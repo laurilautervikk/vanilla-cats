@@ -40,10 +40,19 @@ export function setupLogin(element) {
           username: inputUsername,
           password: passwordHashed,
         };
-
+        //create user
         try {
           const registeredUser = await axios.post(`auth/register`, body);
-          localStorage.setItem("userId", registeredUser.id);
+          try {
+            //get id for new user
+            const getRegisteredUserId = await axios.get(
+              `auth/user/username/${inputUsername}`
+            );
+            console.log("getRegisteredUserId ", getRegisteredUserId.data._id);
+            localStorage.setItem("userId", getRegisteredUserId.data._id);
+          } catch (error) {
+            console.log("unable to log in registered user");
+          }
           //show message in modal
           const modal = document.getElementById("modal");
           const alertBox = document.getElementById("alert-box");
@@ -53,7 +62,7 @@ export function setupLogin(element) {
             alertBox.innerHTML = "";
           }, 1000);
           //toggle main menu
-          toggleMenu(registeredUser.username);
+          toggleMenu(registeredUser.data.username);
         } catch (error) {
           console.log("User regisrtation failed");
         }
@@ -70,14 +79,14 @@ export function setupLogin(element) {
 
   //login user
   async function loginUser(inputUsername, inputPassword) {
-    //check if there is input
-    if (inputUsername && inputPassword) {
+    //check if there is input username
+    if (inputUsername) {
       //get user from db
       const response = await axios.get(`auth/user/username/${inputUsername}`);
       const userExists = response.data;
-      console.log("userExists.username ", userExists.username);
+      console.log("userExists ", userExists);
       //if user exists, compare passwords
-      if (userExists.username) {
+      if (userExists != null) {
         const isPasswordValid = bcrypt.compareSync(
           inputPassword,
           userExists.password

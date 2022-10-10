@@ -4,7 +4,8 @@ const express = require("express");
 const router = express.Router();
 const needle = require("needle");
 const cors = require("cors");
-
+const path = require("path");
+const fs = require("fs");
 const fileUpload = require("express-fileupload");
 const FormData = require("form-data");
 
@@ -15,8 +16,7 @@ const API_KEY_VALUE = process.env.API_KEY_VALUE;
 router.use(cors());
 router.use(
   fileUpload({
-    debug: true,
-    useTempFiles: true,
+    createParentPath: true,
   })
 );
 router.use(bodyParser.json());
@@ -143,52 +143,73 @@ router.delete("/favourites/:favouriteId", async (req, res) => {
   }
 });
 
-//upload image //BROKEN
+//delete favorite //WORKS
+router.delete("/favourites/:favouriteId", async (req, res) => {
+  try {
+    const requestHeaders = {
+      headers: {
+        [API_KEY_NAME]: API_KEY_VALUE,
+        "Content-Type": "application/json",
+      },
+    };
+    const body = JSON.stringify(req.body);
+    const apiRes = await needle(
+      "delete",
+      `${API_BASE_URL}/favourites/${req.params.favouriteId}`,
+      body,
+      requestHeaders
+    );
+
+    res.status(apiRes.statusCode).json(apiRes.body);
+  } catch {
+    res.status(500).json({ error: "error: delete favourite" });
+  }
+});
+
+//proxy image upload //WORKS
 router.post("/images/upload", async (req, res) => {
   try {
-    // const requestHeaders = {
-    //   headers: {
-    //     [API_KEY_NAME]: API_KEY_VALUE,
-    //     "Content-Type": "multipart/form-data",
-    //   },
-    // };
+    //local file upload
+    let file = req.files.file;
+    let filePath = path.join(__dirname, "..", "uploads", file.name); //a unique id should be added
 
-    console.log("req.files.file ", req.files.file);
-    console.log("req.body.sub_id ", req.body.sub_id);
+    file.mv(filePath, function (err) {
+      if (err) {
+        console.log("save error");
+      }
+      console.log("file saved");
+    });
 
+    //compile formData for API request
     let form = new FormData();
     form.append("sub_id", req.body.sub_id);
-    //form.append("file", req.files.file);
-    form.append("file", fileUpload);
+    form.append("file", fs.createReadStream(filePath));
 
     const headers = Object.assign(
-      {
-        [API_KEY_NAME]: API_KEY_VALUE,
-      },
+      { [API_KEY_NAME]: API_KEY_VALUE },
       form.getHeaders()
     );
 
-    console.log("requestHeaders ", headers);
-
-    //   const headers = Object.assign({
-    //     [API_KEY_NAME]: API_KEY_VALUE,
-    //     "Content-Type": "multipart/form-data",
-    // }, form_data.getHeaders());
-
-    console.log("formData ", form);
+    const requestHeaders = {
+      headers: headers,
+    };
 
     const apiRes = await needle(
       "post",
       `${API_BASE_URL}/images/upload`,
       form,
-      headers,
-      { multipart: true }
+      requestHeaders,
+      {
+        multipart: true,
+      }
     );
-    console.log("apiRes.body ", apiRes.body);
+
+    //console.log("headers ", headers);
+    //console.log("form ", form);
 
     res.status(apiRes.statusCode).json(apiRes.body);
   } catch {
-    res.status(500).json({ error: "error: upload image" });
+    res.status(500).json({ error: "image upload from Express to API FAILED" });
   }
 });
 

@@ -17,16 +17,16 @@ export async function setupUploads(element) {
   // create form
   page.innerHTML = /*html*/ `
   <div class="upload-div">
-  <h3>Upload an image</h3>
-  <form action="/api/images/upload" method="POST" enctype="multipart/form-data">
-  <input type="file" id="image-input" name="file" accept="image/jpeg, image/png, image/jpg">
-  </form>
-  <br>
-  <div class="upload-image-div">
-  <div id="display-image">
-  <div id="loader" class="lds-ring"><div></div><div></div><div></div><div></div></div>
-  </div>
-  </div>
+      <h3 id="message">Upload an image</h3>
+          <form action="/api/images/upload" method="POST" enctype="multipart/form-data">
+          <input type="file" id="image-input" name="file" accept="image/jpeg, image/png, image/jpg">
+          </form>
+          <br>
+          <div class="upload-image-div">
+            <div id="display-image">
+            <div id="loader" class="lds-ring"><div></div><div></div><div></div><div></div></div>
+          </div>
+      </div>
   </div>
   `;
   document.getElementById("loader").style.display = "none";
@@ -44,15 +44,33 @@ export async function setupUploads(element) {
 
     try {
       const upload = await axios.post("api/images/upload", formData);
-      console.log("upload ", upload);
+      console.log("upload ", upload.body);
       //hide spinner
       document.getElementById("loader").style.display = "none";
       //clear preview
       document.querySelector("#display-image").style.backgroundImage = "";
       await getUploadedImages();
       console.log("Upload SUCCESS at FE");
+      imageInput.value = "";
+      //display message
+      const message = document.getElementById("message");
+      message.innerHTML = `<span style="color:green;">Upload Successful</span>`;
+      setTimeout(() => {
+        message.innerHTML = "Upload an image";
+      }, 2000);
     } catch {
       console.log("Upload FAILED at FE");
+      //hide spinner
+      document.getElementById("loader").style.display = "none";
+      //clear preview
+      document.querySelector("#display-image").style.backgroundImage = "";
+      imageInput.value = "";
+      //display message
+      const message = document.getElementById("message");
+      message.innerHTML = `<span style="color:red;">No cats found on the image</span>`;
+      setTimeout(() => {
+        message.innerHTML = "Upload an image";
+      }, 2000);
     }
   }
 
