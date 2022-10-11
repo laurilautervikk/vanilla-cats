@@ -1,13 +1,14 @@
-const bodyParser = require("body-parser");
-const url = require("url");
 const express = require("express");
 const router = express.Router();
+const bodyParser = require("body-parser");
 const needle = require("needle");
 const cors = require("cors");
 const path = require("path");
+const url = require("url");
 const fs = require("fs");
-const fileUpload = require("express-fileupload");
 const FormData = require("form-data");
+const fileUpload = require("express-fileupload");
+var expressWs = require("express-ws")(router);
 
 const API_BASE_URL = process.env.API_BASE_URL;
 const API_KEY_NAME = process.env.API_KEY_NAME;
@@ -21,6 +22,15 @@ router.use(
 );
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
+
+//WS endpoint
+router.ws("/", function (ws, req) {
+  ws.on("message", function (msg) {
+    expressWs.getWss().clients.forEach((client) => client.send(msg));
+  });
+});
+
+router.use("/ws-stuff", router);
 
 //GET endpoints
 //get images //WORKS
@@ -40,10 +50,18 @@ router.get("/images/search", async (req, res) => {
       `${API_BASE_URL}/images/search?${params}`,
       requestHeaders
     );
+
+    expressWs
+      .getWss()
+      .clients.forEach((client) =>
+        client.send(JSON.stringify({ hello: "hi" }))
+      );
     res.status(apiRes.statusCode).json(apiRes.body);
-  } catch {
-    console.log("at error");
-    res.status(500).json({ error: "error get images" });
+  } catch (error) {
+    //responding to error with status 200, otherwise
+    //FE gets a rejected promise and fails
+    console.log("API error ", error);
+    res.status(200).json({ error: error });
   }
 });
 
@@ -184,6 +202,7 @@ router.post("/images/upload", async (req, res) => {
     let form = new FormData();
     form.append("sub_id", req.body.sub_id);
     form.append("file", fs.createReadStream(filePath));
+    fs.unlinkSync(filePath);
 
     const headers = Object.assign(
       { [API_KEY_NAME]: API_KEY_VALUE },
@@ -203,9 +222,6 @@ router.post("/images/upload", async (req, res) => {
         multipart: true,
       }
     );
-
-    //console.log("headers ", headers);
-    //console.log("form ", form);
 
     res.status(apiRes.statusCode).json(apiRes.body);
   } catch {

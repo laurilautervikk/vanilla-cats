@@ -136,5 +136,5 @@ export async function setupUploads(element) {
     });
   }
 
-  await getUploadedImages();
+  getUploadedImages();
 }

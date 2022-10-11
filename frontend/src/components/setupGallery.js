@@ -102,11 +102,32 @@ export async function setupGallery(element) {
         }
       });
     } else {
-      //get cats from API for unauthorized user
-      const response = await axios.get("api/images/search?limit=6&order=Desc");
-      let cats = response.data;
-      console.log("cats from API ", cats);
-      //get cats and start to draw cardDiv
+      //get response backup first
+      let catsLocal = JSON.parse(localStorage.getItem("apiBackup"));
+      console.log("apiBackup ", catsLocal);
+      try {
+        //get cats from API for unauthorized user
+        const response = await axios.get(
+          "api/images/search?limit=12&order=Desc"
+        );
+        let cats = response.data;
+        console.log("data from API ", cats);
+
+        //check if response contains list of cats
+        if (0 in cats) {
+          //backup response
+          localStorage.setItem("apiBackup", JSON.stringify(cats));
+        }
+      } catch (error) {
+        console.log("axios get images error ", error);
+      }
+      if ("error" in cats) {
+        //if response contains error, use backup instead
+        let catsLocal = JSON.parse(localStorage.getItem("apiBackup"));
+        cats = catsLocal;
+        console.log("apiBackup ", catsLocal);
+      }
+      //loop over data and start to draw cardDiv
       cats.forEach((item) => {
         //creat a cat card
         const cardDiv = document.createElement("div");
@@ -114,12 +135,12 @@ export async function setupGallery(element) {
         //set id for cardDiv
         cardDiv.id = item.id;
         cardDiv.innerHTML = /*html*/ `
-      <img src="${item.url}" alt="cat" class="card--image"/>
-      `;
+          <img src="${item.url}" alt="cat" class="card--image"/>
+          `;
         element.appendChild(cardDiv);
       });
     }
   }
 
-  await getCats();
+  getCats();
 }
