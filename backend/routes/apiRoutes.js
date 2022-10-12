@@ -8,6 +8,7 @@ const url = require("url");
 const fs = require("fs");
 const FormData = require("form-data");
 const fileUpload = require("express-fileupload");
+
 var expressWs = require("express-ws")(router);
 
 const API_BASE_URL = process.env.API_BASE_URL;
@@ -23,17 +24,15 @@ router.use(
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
-//WS endpoint
-router.ws("/", function (ws, req) {
+//WS server
+router.ws("/echo", function (ws, req) {
   ws.on("message", function (msg) {
-    expressWs.getWss().clients.forEach((client) => client.send(msg));
+    ws.send(msg);
   });
 });
 
-router.use("/ws-stuff", router);
-
 //GET endpoints
-//get images //WORKS
+//get images
 router.get("/images/search", async (req, res) => {
   try {
     const requestHeaders = {
@@ -51,21 +50,20 @@ router.get("/images/search", async (req, res) => {
       requestHeaders
     );
 
-    expressWs
-      .getWss()
-      .clients.forEach((client) =>
-        client.send(JSON.stringify({ hello: "hi" }))
-      );
     res.status(apiRes.statusCode).json(apiRes.body);
   } catch (error) {
-    //responding to error with status 200, otherwise
-    //FE gets a rejected promise and fails
     console.log("API error ", error);
-    res.status(200).json({ error: error });
+    res.status(500).json({ error: error });
   }
+  //emit a ws message
+  // expressWs
+  //   .getWss()
+  //   .clients.forEach((client) =>
+  //     client.send(JSON.stringify({ data: "Images loaded!" }))
+  //   );
 });
 
-//get favorites //WORKS
+//get favorites
 router.get("/favourites", async (req, res) => {
   try {
     const requestHeaders = {
@@ -89,7 +87,7 @@ router.get("/favourites", async (req, res) => {
   }
 });
 
-//get uploads //WORKS
+//get uploads
 router.get("/images", async (req, res) => {
   try {
     const requestHeaders = {
@@ -113,7 +111,7 @@ router.get("/images", async (req, res) => {
 });
 
 //POST endpoints
-//set favorite //WORKS
+//set favorite
 router.post("/favourites", async (req, res) => {
   try {
     const requestHeaders = {
@@ -138,7 +136,7 @@ router.post("/favourites", async (req, res) => {
   }
 });
 
-//delete favorite //WORKS
+//delete favorite
 router.delete("/favourites/:favouriteId", async (req, res) => {
   try {
     const requestHeaders = {
@@ -161,7 +159,7 @@ router.delete("/favourites/:favouriteId", async (req, res) => {
   }
 });
 
-//delete favorite //WORKS
+//delete favorite
 router.delete("/favourites/:favouriteId", async (req, res) => {
   try {
     const requestHeaders = {
@@ -184,7 +182,7 @@ router.delete("/favourites/:favouriteId", async (req, res) => {
   }
 });
 
-//proxy image upload //WORKS
+//proxy image upload
 router.post("/images/upload", async (req, res) => {
   try {
     //local file upload
@@ -229,7 +227,7 @@ router.post("/images/upload", async (req, res) => {
   }
 });
 
-//delete uploaded image //WORKS
+//delete uploaded image
 router.delete("/images/:id", async (req, res) => {
   try {
     const requestHeaders = {
