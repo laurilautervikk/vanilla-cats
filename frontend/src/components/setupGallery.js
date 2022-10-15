@@ -48,13 +48,9 @@ export async function setupGallery(element) {
   }
 
   //draw gallery
-  async function getCats() {
-    //get cats from APIlet
-    const response = await axios.get("api/images/search?limit=12&order=Desc");
-    let cats = response.data;
-    console.log("cats from API ", cats);
-    //get cats and start to draw cardDiv
-
+  let cats;
+  async function drawCats() {
+    await getCats();
     //check if anybody lgged in
     const loggedInUserId = localStorage.getItem("userId");
     if (loggedInUserId) {
@@ -64,14 +60,18 @@ export async function setupGallery(element) {
         sub_id: loggedInUserId,
         order: "DESC",
       };
-      const response = await axios.get("api/favourites", { params });
-      favorites = response.data;
-      console.log("favs ", favorites);
       let favoriteList = [];
-      for (let i = 0; i < favorites.length; i++) {
-        favoriteList.push(favorites[i].image_id);
+      try {
+        const response = await axios.get("api/favourites", { params });
+        favorites = response.data;
+        console.log("favs ", favorites);
+        for (let i = 0; i < favorites.length; i++) {
+          favoriteList.push(favorites[i].image_id);
+        }
+        console.log("favList ", favoriteList);
+      } catch (error) {
+        console.log("favorites not available");
       }
-      console.log("favList ", favoriteList);
 
       cats.forEach((item) => {
         //create a cat card
@@ -102,32 +102,9 @@ export async function setupGallery(element) {
         }
       });
     } else {
-      //get response backup first
-      let catsLocal = JSON.parse(localStorage.getItem("apiBackup"));
-      console.log("apiBackup ", catsLocal);
-      try {
-        //get cats from API for unauthorized user
-        const response = await axios.get(
-          "api/images/search?limit=12&order=Desc"
-        );
-        let cats = response.data;
-        console.log("data from API ", cats);
-
-        //check if response contains list of cats
-        if (0 in cats) {
-          //backup response
-          localStorage.setItem("apiBackup", JSON.stringify(cats));
-        }
-      } catch (error) {
-        console.log("axios get images error ", error);
-      }
-      if ("error" in cats) {
-        //if response contains error, use backup instead
-        let catsLocal = JSON.parse(localStorage.getItem("apiBackup"));
-        cats = catsLocal;
-        console.log("apiBackup ", catsLocal);
-      }
-      //loop over data and start to draw cardDiv
+      //loop over data and draw cardDiv for non auth user
+      await getCats();
+      console.log("cats at render ", cats);
       cats.forEach((item) => {
         //creat a cat card
         const cardDiv = document.createElement("div");
@@ -142,5 +119,33 @@ export async function setupGallery(element) {
     }
   }
 
-  getCats();
+  async function getCats() {
+    //get backedup response first
+    let catsLocal = JSON.parse(localStorage.getItem("apiBackup"));
+    console.log("first let's get cats from backup ", catsLocal);
+    try {
+      //get cats from API if possible
+      const response = await axios
+        .get("api/images/search?limit=12&order=Desc")
+        .catch((err) => {
+          if (err.response.status === 500) {
+            throw new Error(`${err.config.url} server error`);
+          }
+          throw err;
+        });
+      cats = response.data;
+      //backup response if its successful
+      if (0 in cats) {
+        localStorage.setItem("apiBackup", JSON.stringify(cats));
+      }
+      console.log("live data from API ", cats);
+    } catch (error) {
+      cats = catsLocal;
+      console.log("Cats loaded from backup");
+    }
+
+    return cats;
+  }
+
+  drawCats();
 }

@@ -9,8 +9,6 @@ const fs = require("fs");
 const FormData = require("form-data");
 const fileUpload = require("express-fileupload");
 
-var expressWs = require("express-ws")(router);
-
 const API_BASE_URL = process.env.API_BASE_URL;
 const API_KEY_NAME = process.env.API_KEY_NAME;
 const API_KEY_VALUE = process.env.API_KEY_VALUE;
@@ -23,13 +21,6 @@ router.use(
 );
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
-
-//WS server
-router.ws("/echo", function (ws, req) {
-  ws.on("message", function (msg) {
-    ws.send(msg);
-  });
-});
 
 //GET endpoints
 //get images
@@ -55,12 +46,7 @@ router.get("/images/search", async (req, res) => {
     console.log("API error ", error);
     res.status(500).json({ error: error });
   }
-  //emit a ws message
-  // expressWs
-  //   .getWss()
-  //   .clients.forEach((client) =>
-  //     client.send(JSON.stringify({ data: "Images loaded!" }))
-  //   );
+  //ws.send("Somebody asked for Cats in apiRoutes");
 });
 
 //get favorites

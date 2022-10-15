@@ -2,6 +2,7 @@ import { setupGallery } from "./setupGallery.js";
 import { setupFavorites } from "./setupFavorites.js";
 import { setupUploads } from "./setupUploads.js";
 import { setupLogin } from "./setupLogin";
+import socket from "../main.js";
 
 export function setupNavbar(element) {
   const navList = document.createElement("ul");
@@ -26,6 +27,11 @@ export function setupNavbar(element) {
       this.className += " active";
     });
   }
+
+  // socket.addEventListener("message", (data) => {
+  //   //setupGallery(document.querySelector("#page-content"));
+  //   console.log("WS data at navbar ", data);
+  // });
 
   //event listeners for menu items
   const catsBtn = document.getElementById("cats-btn");
