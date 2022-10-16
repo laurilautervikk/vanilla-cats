@@ -3,14 +3,36 @@ import axios from "axios";
 import { setupGallery } from "./components/setupGallery.js";
 import { setupNavbar } from "./components/setupNavbar";
 import { setupLogin } from "./components/setupLogin";
+
 axios.defaults.baseURL = "http://localhost:5000/";
 
 const socket = new WebSocket("ws://localhost:8080/");
 
+document.querySelector("#app").innerHTML = /*html*/ `
+  <div id="main-container" class="container">
+    <nav class="nav">
+        </nav>
+      <div id="page-content">
+        </div>
+        <div id="modal-wrapper" data-active="true"></div>
+    </div>
+`;
+
+async function setupApp() {
+  console.log("0");
+  setupNavbar(document.querySelector("nav"));
+  console.log("1");
+  setupLogin(document.querySelector("#modal-wrapper"));
+  console.log("2");
+  await setupGallery(document.querySelector("#page-content"));
+  console.log("3");
+}
+
+setupApp();
+
 socket.onopen = function (e) {
-  console.log("WS Connection established");
-  console.log("WS Sending to server");
-  socket.send("My name is John");
+  console.log("WS Connection established from client side");
+  socket.send("Client says hello");
 };
 
 socket.onmessage = function (event) {
@@ -32,18 +54,5 @@ socket.onclose = function (event) {
 socket.onerror = function (error) {
   console.log(`WS ${error.message}`);
 };
-
-document.querySelector("#app").innerHTML = /*html*/ `
-  <div id="main-container" class="container">
-    <nav class="nav">
-        </nav>
-      <div id="page-content">
-        </div>
-        <div id="modal-wrapper" data-active="true"></div>
-    </div>
-`;
-setupGallery(document.querySelector("#page-content"));
-setupNavbar(document.querySelector("nav"));
-setupLogin(document.querySelector("#modal-wrapper"));
 
 export default socket;

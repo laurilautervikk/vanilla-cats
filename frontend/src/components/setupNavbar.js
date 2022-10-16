@@ -2,9 +2,10 @@ import { setupGallery } from "./setupGallery.js";
 import { setupFavorites } from "./setupFavorites.js";
 import { setupUploads } from "./setupUploads.js";
 import { setupLogin } from "./setupLogin";
-import socket from "../main.js";
+//import socket from "../main.js";
 
 export function setupNavbar(element) {
+  console.log("SETTING UP NAVBAR");
   const navList = document.createElement("ul");
   navList.classList.add("nav--list");
 
@@ -20,6 +21,7 @@ export function setupNavbar(element) {
 
   const btns = navList.getElementsByClassName("btn");
 
+  //navbar active btn
   for (let i = 0; i < btns.length; i++) {
     btns[i].addEventListener("click", function () {
       const current = document.getElementsByClassName("active");

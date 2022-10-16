@@ -3,11 +3,14 @@ import { setupGallery } from "./setupGallery.js";
 import axios from "axios";
 
 export function setupLogin(element) {
+  console.log("SETTING UP LOGIN");
   //toggle main menu items
   function toggleMenu(displayUsername) {
+    console.log("LOGIN toggleMenu");
     const displayName = document.getElementById("display-name");
     displayName.innerHTML = displayUsername;
     const favoritesLink = document.getElementById("favorites-btn");
+    console.log("favoritesLink ", favoritesLink);
     const uploadsLink = document.getElementById("uploads-btn");
     const loginLink = document.getElementById("login-btn");
     const logoutLink = document.getElementById("logout-btn");
@@ -16,7 +19,7 @@ export function setupLogin(element) {
     displayName.classList.toggle("hide");
     loginLink.classList.toggle("hide");
     logoutLink.classList.toggle("hide");
-    setupGallery(document.querySelector("#page-content"));
+    console.log("LOGIN toggleMenu END");
   }
   //register user
   async function registerUser(inputUsername, inputPassword) {
@@ -129,14 +132,17 @@ export function setupLogin(element) {
   }
 
   async function renewLogin() {
-    //re-log in the logged in user after refresh
+    //re-login the logged in user after refresh
     const loggedInUserId = localStorage.getItem("userId");
+    console.log("loggedInUserId at RELOGIN", loggedInUserId);
     if (loggedInUserId) {
+      console.log("LOGGED IN AT renewLogin");
       const response = await axios.get(`auth/user/id/${loggedInUserId}`);
       const userExists = response.data;
-      console.log("userExists.username ", userExists.username);
-      //toggle main menu
+      console.log("DO YOU SEE?? userExists at relogin ", userExists);
+      //relogin the logged in user
       toggleMenu(userExists.username);
+      //await loginUser(userExists.username, userExists._id);
     } else {
       console.log("Nobody logged in");
     }
@@ -146,6 +152,7 @@ export function setupLogin(element) {
     //delete user from localstorage, clear sessionstorage
     sessionStorage.clear();
     localStorage.removeItem("userId");
+    setupGallery(document.querySelector("#page-content"));
     toggleMenu();
   }
 
@@ -201,7 +208,7 @@ export function setupLogin(element) {
 
     event.preventDefault();
   });
-
+  //toggle between login and register
   const toggleRegister = document.getElementById("toggle-register");
   toggleRegister.addEventListener("click", function (event) {
     const messageR = document.getElementById("register-message");

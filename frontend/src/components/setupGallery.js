@@ -6,7 +6,8 @@ export async function setupGallery(element) {
   //clear old content
   const page = document.getElementById("page-content");
   page.innerHTML = "";
-  console.log("SET UP GALLERY DONE");
+  console.log("SETTING UP GALLERY");
+  console.trace();
   //toggle favotite
   async function toggleFavorite(cardDiv, image_id) {
     let sub_id = localStorage.getItem("userId");
@@ -53,7 +54,9 @@ export async function setupGallery(element) {
     await getCats();
     //check if anybody lgged in
     const loggedInUserId = localStorage.getItem("userId");
+    console.log("loggedInUserId at GALLERY ", loggedInUserId);
     if (loggedInUserId) {
+      console.log("SOEMBODY IS LOGGED IN");
       //get favorites for logged in user
       let favorites = {};
       const params = {
@@ -64,11 +67,11 @@ export async function setupGallery(element) {
       try {
         const response = await axios.get("api/favourites", { params });
         favorites = response.data;
-        console.log("favs ", favorites);
+        //console.log("favs ", favorites);
         for (let i = 0; i < favorites.length; i++) {
           favoriteList.push(favorites[i].image_id);
         }
-        console.log("favList ", favoriteList);
+        //console.log("favList ", favoriteList);
       } catch (error) {
         console.log("favorites not available");
       }
@@ -87,10 +90,14 @@ export async function setupGallery(element) {
         cardDiv.dataset.favorite = item.id;
         element.appendChild(cardDiv);
         const button = document.getElementById(`favorite-btn-${item.id}`);
-        button.addEventListener("click", function (event) {
-          toggleFavorite(cardDiv, cardDiv.id);
-          event.preventDefault();
-        });
+
+        if (button) {
+          button.addEventListener("click", function (event) {
+            toggleFavorite(cardDiv, cardDiv.id);
+            event.preventDefault();
+          });
+        }
+
         //check if id in favorite list, if so make button red
         if (favoriteList.includes(item.id)) {
           cardDiv.classList.add("is-favorite");
@@ -104,7 +111,7 @@ export async function setupGallery(element) {
     } else {
       //loop over data and draw cardDiv for non auth user
       await getCats();
-      console.log("cats at render ", cats);
+      //console.log("cats at render ", cats);
       cats.forEach((item) => {
         //creat a cat card
         const cardDiv = document.createElement("div");
@@ -121,12 +128,12 @@ export async function setupGallery(element) {
 
   async function getCats() {
     //get backedup response first
-    let catsLocal = JSON.parse(localStorage.getItem("apiBackup"));
-    console.log("first let's get cats from backup ", catsLocal);
+    //let catsLocal = JSON.parse(localStorage.getItem("apiBackup"));
+    //console.log("first let's get cats from backup ", catsLocal);
     try {
       //get cats from API if possible
       const response = await axios
-        .get("api/images/search?limit=12&order=Desc")
+        .get("api/images/search?limit=6&order=Desc")
         .catch((err) => {
           if (err.response.status === 500) {
             throw new Error(`${err.config.url} server error`);
@@ -138,7 +145,7 @@ export async function setupGallery(element) {
       if (0 in cats) {
         localStorage.setItem("apiBackup", JSON.stringify(cats));
       }
-      console.log("live data from API ", cats);
+      //console.log("live data from API ", cats);
     } catch (error) {
       cats = catsLocal;
       console.log("Cats loaded from backup");

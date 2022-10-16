@@ -46,7 +46,6 @@ router.get("/images/search", async (req, res) => {
     console.log("API error ", error);
     res.status(500).json({ error: error });
   }
-  //ws.send("Somebody asked for Cats in apiRoutes");
 });
 
 //get favorites
