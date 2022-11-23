@@ -6,7 +6,7 @@ import { setupLogin } from "./components/setupLogin";
 
 axios.defaults.baseURL = "http://localhost:5000/";
 
-const socket = new WebSocket("ws://localhost:8080/");
+export const socket = new WebSocket("ws://localhost:8080/");
 
 document.querySelector("#app").innerHTML = /*html*/ `
   <div id="main-container" class="container">
@@ -30,9 +30,10 @@ async function setupApp() {
 
 setupApp();
 
+//WS setup not required here
 socket.onopen = function (e) {
   console.log("WS Connection established from client side");
-  socket.send("Client says hello");
+  socket.send("Client says: hello");
 };
 
 socket.onmessage = function (event) {
@@ -52,7 +53,7 @@ socket.onclose = function (event) {
 };
 
 socket.onerror = function (error) {
-  console.log(`WS ${error.message}`);
+  console.log(`WS error: ${error.message}`);
 };
 
 export default socket;

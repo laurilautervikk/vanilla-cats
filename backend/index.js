@@ -12,14 +12,15 @@ const wss = new WebSocketServer.Server({ port: 8080 });
 
 wss.on("connection", function connection(ws) {
   ws.on("message", function incoming(message) {
-    console.log("received: %s", message);
+    console.log("Server received: %s", message);
     //echo message for all clients
     wss.clients.forEach(function (client) {
-      client.send(message);
+      client.send(`${message}`);
+      //client.send(message);
     });
   });
 
-  ws.send("Server sais hi");
+  ws.send("Server sais: hi");
 });
 
 app.use("/", router);

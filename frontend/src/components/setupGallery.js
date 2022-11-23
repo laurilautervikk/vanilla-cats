@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { socket } from "../main.js";
 //TODO: Endless scroll, image loaders
 
 export async function setupGallery(element) {
@@ -127,6 +127,15 @@ export async function setupGallery(element) {
   }
 
   async function getCats() {
+    //SENDING WS
+    socket.onopen = function (e) {
+      console.log("WS at getCats");
+      try {
+        socket.send("flash-blue");
+      } catch (e) {
+        console.log(e);
+      }
+    };
     //get backedup response first
     //let catsLocal = JSON.parse(localStorage.getItem("apiBackup"));
     //console.log("first let's get cats from backup ", catsLocal);
@@ -153,6 +162,21 @@ export async function setupGallery(element) {
 
     return cats;
   }
+
+  function alertCats() {
+    const nav = document.querySelector("nav");
+    nav.classList.toggle("dark");
+    setTimeout(() => {
+      nav.classList.toggle("dark");
+    }, 500);
+  }
+
+  socket.onmessage = function (event) {
+    console.log("Event.data from server:  ", event.data);
+    if (event.data === "flash-blue") {
+      alertCats();
+    }
+  };
 
   drawCats();
 }
