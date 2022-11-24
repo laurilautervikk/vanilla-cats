@@ -11,16 +11,13 @@ const WebSocketServer = require("ws");
 const wss = new WebSocketServer.Server({ port: 8080 });
 
 wss.on("connection", function connection(ws) {
-  ws.on("message", function incoming(message) {
-    console.log("Server received: %s", message);
-    //echo message for all clients
+  ws.on("message", function message(data, isBinary) {
     wss.clients.forEach(function (client) {
-      client.send(`${message}`);
-      //client.send(message);
+      if (client !== ws && client.readyState === WebSocketServer.OPEN) {
+        client.send(data, { binary: isBinary });
+      }
     });
   });
-
-  ws.send("Server sais: hi");
 });
 
 app.use("/", router);

@@ -6,8 +6,6 @@ import { setupLogin } from "./components/setupLogin";
 
 axios.defaults.baseURL = "http://localhost:5000/";
 
-export const socket = new WebSocket("ws://localhost:8080/");
-
 document.querySelector("#app").innerHTML = /*html*/ `
   <div id="main-container" class="container">
     <nav class="nav">
@@ -29,31 +27,3 @@ async function setupApp() {
 }
 
 setupApp();
-
-//WS setup not required here
-socket.onopen = function (e) {
-  console.log("WS Connection established from client side");
-  socket.send("Client says: hello");
-};
-
-socket.onmessage = function (event) {
-  console.log(`WS Data received from server: ${event.data}`);
-};
-
-socket.onclose = function (event) {
-  if (event.wasClean) {
-    console.log(
-      `WS Connection closed cleanly, code=${event.code} reason=${event.reason}`
-    );
-  } else {
-    // e.g. server process killed or network down
-    // event.code is usually 1006 in this case
-    console.log("WS Connection died");
-  }
-};
-
-socket.onerror = function (error) {
-  console.log(`WS error: ${error.message}`);
-};
-
-export default socket;

@@ -1,6 +1,34 @@
 import axios from "axios";
-import { socket } from "../main.js";
+//import { socket } from "../main.js";
 //TODO: Endless scroll, image loaders
+
+export const socket = new WebSocket("ws://localhost:8080/");
+
+//WS setup
+socket.onopen = function () {
+  console.log("WS Connection established at client side");
+  socket.send("Client says: hello");
+};
+
+socket.onmessage = function (event) {
+  console.log(`WS Data received from server: ${event.data}`);
+};
+
+socket.onclose = function (event) {
+  if (event.wasClean) {
+    console.log(
+      `WS Connection closed cleanly, code=${event.code} reason=${event.reason}`
+    );
+  } else {
+    // e.g. server process killed or network down
+    // event.code is usually 1006 in this case
+    console.log("WS Connection died");
+  }
+};
+
+socket.onerror = function (error) {
+  console.log(`WS error: ${error.message}`);
+};
 
 export async function setupGallery(element) {
   //clear old content
@@ -8,6 +36,31 @@ export async function setupGallery(element) {
   page.innerHTML = "";
   console.log("SETTING UP GALLERY");
   console.trace();
+
+  function addFavoritesOnRemote(cardDivId) {
+    let sub_id = localStorage.getItem("userId");
+    const data = {
+      user: sub_id,
+      action: "add",
+      elementId: cardDivId,
+    };
+
+    //socket.send("Client says: add favorite");
+
+    socket.send(JSON.stringify(data));
+  }
+
+  function deleteFavoritesOnRemote(cardDivId) {
+    let sub_id = localStorage.getItem("userId");
+    const data = {
+      user: sub_id,
+      action: "delete",
+      elementId: cardDivId,
+    };
+    //socket.send("Client says: delete favorite");
+    socket.send(JSON.stringify(data));
+  }
+
   //toggle favotite
   async function toggleFavorite(cardDiv, image_id) {
     let sub_id = localStorage.getItem("userId");
@@ -26,6 +79,8 @@ export async function setupGallery(element) {
         );
         if (response.data.message === "SUCCESS") {
           cardDiv.classList.toggle("is-favorite");
+          deleteFavoritesOnRemote(cardDiv.id);
+          console.log("cardDiv.id ", cardDiv.id);
         } else {
           console.error("error: delete favourite not successful");
         }
@@ -39,6 +94,8 @@ export async function setupGallery(element) {
           console.log("Favorite added");
           cardDiv.setAttribute("data-favorite", response.data.id);
           cardDiv.classList.toggle("is-favorite");
+          addFavoritesOnRemote(cardDiv.id);
+          console.log("cardDiv.id ", cardDiv.id);
         } else {
           console.error("error: add favourite not successful");
         }
@@ -127,15 +184,6 @@ export async function setupGallery(element) {
   }
 
   async function getCats() {
-    //SENDING WS
-    socket.onopen = function (e) {
-      console.log("WS at getCats");
-      try {
-        socket.send("flash-blue");
-      } catch (e) {
-        console.log(e);
-      }
-    };
     //get backedup response first
     //let catsLocal = JSON.parse(localStorage.getItem("apiBackup"));
     //console.log("first let's get cats from backup ", catsLocal);
@@ -163,18 +211,18 @@ export async function setupGallery(element) {
     return cats;
   }
 
-  function alertCats() {
-    const nav = document.querySelector("nav");
-    nav.classList.toggle("dark");
-    setTimeout(() => {
-      nav.classList.toggle("dark");
-    }, 500);
-  }
-
   socket.onmessage = function (event) {
-    console.log("Event.data from server:  ", event.data);
-    if (event.data === "flash-blue") {
-      alertCats();
+    try {
+      console.log(JSON.parse(event.data));
+      const data = JSON.parse(event.data);
+      if (data.user === localStorage.getItem("userId")) {
+        const element = document.getElementById(data.elementId);
+        element.classList.toggle("is-favorite");
+      } else {
+        console.log("WS no user Id match");
+      }
+    } catch {
+      console.log("Message received: ", event.data);
     }
   };
 
