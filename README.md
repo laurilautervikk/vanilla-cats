@@ -6,12 +6,12 @@ Learning to consume the Cat API
 
 Requirements:
 
-- Perform CRUD operations againt the API endpoints
+- Perform CRUD operations against the API endpoints
 - Keep sensitive info out of code
-- Implement a local login functionality
+- Implement local login functionality
 
 TODO:
 
 - Add loader for images
-- Implement lazy loading on scroll
+- Implement lazyloading on scroll
 - Deploy to a free host
